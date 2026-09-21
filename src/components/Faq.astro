@@ -1,0 +1,40 @@
+---
+/**
+ * Faq.astro — accordéon de questions (<details> natifs), identique sur toutes les pages.
+ * Les entrées vides ou liées à un format désactivé sont filtrées en amont (visibleFaq).
+ * Le JSON-LD FAQPage est injecté par la page dans le slot « head ».
+ */
+import type { FaqItem } from '../data/content';
+import { ui } from '../data/content';
+import Icon from './Icon.astro';
+
+interface Props {
+  items: FaqItem[];
+  moreHref?: string;
+}
+const { items, moreHref } = Astro.props;
+---
+
+<div class="faq">
+  {
+    items.map((item, index) => (
+      <details class="faq__item reveal" style={`--reveal-delay: ${index * 60}ms`}>
+        <summary class="faq__summary">
+          <h3 class="faq__q">{item.q}</h3>
+          <span class="faq__icon"><Icon name="plus" strokeWidth={2} /></span>
+        </summary>
+        <div class="faq__answer">
+          <p>{item.a}</p>
+        </div>
+      </details>
+    ))
+  }
+</div>
+
+{
+  moreHref && (
+    <p class="note faq__more">
+      {ui.faqMore} <a href={moreHref}>{ui.faqMoreLink}</a>
+    </p>
+  )
+}

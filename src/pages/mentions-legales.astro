@@ -1,0 +1,9 @@
+---
+/** Mentions légales — contenu : content.legal.mentions ; valeurs : site.legal. */
+import LegalPage from '../components/LegalPage.astro';
+import { legal } from '../data/content';
+
+const t = legal.mentions;
+---
+
+<LegalPage seo={t.seo} title={t.title} intro={t.intro} sections={t.sections} path="/mentions-legales" />

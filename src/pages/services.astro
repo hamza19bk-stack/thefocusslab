@@ -1,0 +1,197 @@
+---
+/**
+ * Services — hero + raccourcis, détail des offres (jamais de prix), socle commun,
+ * déroulement, FAQ, appel à l'action.
+ * Une offre liée à un format désactivé (site.contact.modes) disparaît, ainsi que son raccourci.
+ */
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Faq from '../components/Faq.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site';
+import { services, ui, modeLabels } from '../data/content';
+import { isSet } from '../lib/utils';
+import { activeOffers, modesOn, hasCtaNote, visibleFaq, faqJsonLd } from '../lib/data';
+
+const t = services;
+const faq = visibleFaq(t.faq.items);
+---
+
+<Base title={t.seo.title} description={t.seo.description} path="/services">
+  {faq.length > 0 && <script slot="head" type="application/ld+json" set:html={JSON.stringify(faqJsonLd(faq))} />}
+
+  <section class="section section--tight hero" aria-labelledby="hero-titre">
+    <div class="container">
+      <div class="stack stack--m measure">
+        <p class="eyebrow animate-fade-up">{t.hero.eyebrow}</p>
+        <h1 id="hero-titre" class="animate-fade-up delay-1">{t.hero.titleLead}<br /><span class="mark">{t.hero.titleMark}</span></h1>
+        <p class="lead animate-fade-up delay-2">{t.hero.lead}</p>
+
+        <div class="cluster animate-fade-up delay-3">
+          <a class="btn btn--primary btn--lg" href="/reservation">{site.booking.ctaLabel}</a>
+          <a class="btn btn--ghost btn--lg" href="/contact">{t.hero.secondaryCta}</a>
+        </div>
+
+        {hasCtaNote && <p class="note animate-fade-up delay-3" data-optional="cta-note">{site.booking.ctaNote}</p>}
+
+        {
+          modesOn.length > 0 && (
+            <ul class="cluster cluster--xs list-reset animate-fade-up delay-4" aria-label={ui.modesLabel}>
+              {modesOn.map((k) => <li class="chip chip--dot">{modeLabels[k]}</li>)}
+            </ul>
+          )
+        }
+      </div>
+
+      {
+        activeOffers.length > 1 && (
+          <nav class="hero__jump animate-fade delay-4" aria-label={t.hero.jumpLabel}>
+            <ul class="cluster cluster--xs list-reset">
+              {activeOffers.map((offer) => (
+                <li><a class="btn btn--quiet btn--sm" href={`#${offer.id}`}>{offer.short}</a></li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+    </div>
+  </section>
+
+  {
+    activeOffers.length > 0 && (
+      <Section id="offres" rule eyebrow={t.offers.eyebrow} title={t.offers.title} subtitle={t.offers.subtitle}>
+        <div class="grid grid--2 grid--gap-l">
+          {activeOffers.map((offer, i) => (
+            <article
+              class:list={['card card--pad-l offer reveal', { 'card--accent': i === 0 }]}
+              id={offer.id}
+              aria-labelledby={`${offer.id}-titre`}
+              style={`--reveal-delay: ${i * 60}ms`}
+            >
+              <span class:list={['icon-badge', { 'icon-badge--2': i === activeOffers.length - 1 && i > 0 }]}>
+                <Icon name={offer.icon} />
+              </span>
+              <h3 class="card__title" id={`${offer.id}-titre`}>{offer.title}</h3>
+              <p class="card__text">{offer.description}</p>
+
+              {offer.includes.length > 0 && (
+                <Fragment>
+                  <h4 class="offer__label">{ui.includesLabel}</h4>
+                  <ul class="list-check">
+                    {offer.includes.map((item) => <li>{item}</li>)}
+                  </ul>
+                </Fragment>
+              )}
+
+              {isSet(offer.forWho) && (
+                <div class="offer__for">
+                  <p class="offer__for-label">{ui.forWhoLabel}</p>
+                  <p class="offer__for-text">{offer.forWho}</p>
+                </div>
+              )}
+
+              {isSet(offer.note) && <p class="card__meta">{offer.note}</p>}
+
+              <p class="card__foot">
+                <a
+                  class:list={['btn', i === 0 ? 'btn--primary' : 'btn--ghost']}
+                  href={offer.ctaTarget === 'booking' ? '/reservation' : '/contact'}
+                >
+                  {offer.ctaLabel}
+                </a>
+              </p>
+            </article>
+          ))}
+        </div>
+      </Section>
+    )
+  }
+
+  <Section id="socle" variant="alt" eyebrow={t.common.eyebrow} title={t.common.title} subtitle={t.common.subtitle}>
+    <ul class="grid grid--4 grid--gap-s list-reset">
+      {
+        t.common.items.map((item, i) => (
+          <li class="card card--hover reveal" style={`--reveal-delay: ${i * 80}ms`}>
+            <span class="icon-badge"><Icon name={item.icon} /></span>
+            <h3 class="card__title">{item.title}</h3>
+            <p class="card__text">{item.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <Section id="deroulement" eyebrow={t.process.eyebrow} title={t.process.title} subtitle={t.process.subtitle}>
+    <a slot="actions" class="btn btn--ghost" href="/reservation">
+      {site.booking.ctaLabel}
+      <Icon name="arrow-right" strokeWidth={2} />
+    </a>
+
+    <ol class="grid grid--2 grid--gap-s steps">
+      {
+        t.process.steps.map((step, i) => (
+          <li class="card card--hover reveal" style={`--reveal-delay: ${i * 80}ms`}>
+            <span class="step-number" aria-hidden="true">{i + 1}</span>
+            <h3 class="card__title"><span class="sr-only">{ui.stepPrefix(i + 1)}</span>{step.title}</h3>
+            <p class="card__text">{step.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  {
+    faq.length > 0 && (
+      <Section id="faq" variant="alt" width="narrow" eyebrow={t.faq.eyebrow} title={t.faq.title} subtitle={t.faq.subtitle}>
+        <Faq items={faq} moreHref="/contact" />
+      </Section>
+    )
+  }
+
+  <CtaBand
+    eyebrow={t.cta.eyebrow}
+    title={t.cta.title}
+    lead={t.cta.lead}
+    primaryHref="/reservation"
+    secondaryLabel={t.cta.secondaryCta}
+    secondaryHref="/contact"
+  />
+</Base>
+
+<style>
+  .hero__jump {
+    margin-top: var(--space-l);
+    padding-top: var(--space-s);
+    border-top: 1px solid var(--c-border);
+  }
+
+  .offer { scroll-margin-top: calc(var(--header-h) + var(--space-m)); }
+
+  .offer__label {
+    margin: var(--space-2xs) 0 0;
+    font-size: var(--step-small);
+    font-weight: 600;
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--label-transform);
+    color: var(--c-text);
+  }
+
+  .offer__for {
+    margin-top: var(--space-2xs);
+    padding: var(--space-s);
+    border-radius: var(--radius-m);
+    background: var(--c-surface-2);
+    border-left: 3px solid var(--c-accent-dim);
+  }
+  .offer__for-label {
+    margin: 0 0 var(--space-3xs);
+    font-family: var(--font-label);
+    font-size: var(--step-small);
+    font-weight: 500;
+    letter-spacing: var(--tracking-widest);
+    text-transform: var(--label-transform);
+    color: var(--c-accent);
+  }
+  .offer__for-text { margin: 0; color: var(--c-text-soft); }
+</style>

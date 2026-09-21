@@ -1,0 +1,260 @@
+---
+/**
+ * Footer.astro — pied de page : marque, réseaux, navigation, coordonnées, liens légaux.
+ * Chaque coordonnée, chaque réseau n'est rendu que s'il est renseigné (isSet).
+ */
+import { site } from '../data/site';
+import { ui, modeLabels, type ModeKey } from '../data/content';
+import { isSet, phoneHref } from '../lib/utils';
+import Icon from './Icon.astro';
+
+const annee = new Date().getFullYear();
+const brandName = isSet(site.brand.name) ? site.brand.name : ui.brandFallback;
+
+const reseaux = (
+  [
+    { cle: 'instagram', label: 'Instagram', url: site.social.instagram },
+    { cle: 'facebook', label: 'Facebook', url: site.social.facebook },
+    { cle: 'tiktok', label: 'TikTok', url: site.social.tiktok },
+    { cle: 'youtube', label: 'YouTube', url: site.social.youtube },
+    { cle: 'linkedin', label: 'LinkedIn', url: site.social.linkedin },
+    { cle: 'whatsapp', label: 'WhatsApp', url: site.social.whatsapp },
+  ]
+).filter((r) => isSet(r.url));
+
+const modes = (Object.keys(modeLabels) as ModeKey[]).filter((k) => site.contact.modes[k]);
+const place = isSet(site.contact.area) ? site.contact.area : site.contact.city;
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <a class="footer__logo" href="/">
+          <span class="footer__logo-mark"><Icon name="bolt" /></span>
+          {brandName}
+        </a>
+        {isSet(site.brand.tagline) && <p class="footer__tagline">{site.brand.tagline}</p>}
+
+        {
+          reseaux.length > 0 && (
+            <ul class="footer__social" aria-label={ui.socialLabel} data-optional="social">
+              {reseaux.map((reseau) => (
+                <li>
+                  <a href={reseau.url} class="footer__social-link" target="_blank" rel="noopener noreferrer me">
+                    <span class="sr-only">{`${reseau.label} ${ui.newWindow}`}</span>
+                    <Icon name={reseau.cle} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+
+      <nav class="footer__col" aria-labelledby="footer-nav-titre">
+        <h2 class="footer__title" id="footer-nav-titre">{ui.footerNavTitle}</h2>
+        <ul class="footer__list">
+          {
+            site.nav.map((lien) => (
+              <li>
+                <a class="footer__link" href={lien.href}>{lien.label}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div class="footer__col">
+        <h2 class="footer__title">{ui.footerContactTitle}</h2>
+        {
+          (isSet(site.contact.email) || isSet(site.contact.phone) || isSet(place)) && (
+            <ul class="footer__list">
+              {isSet(site.contact.email) && (
+                <li><a class="footer__link" href={`mailto:${site.contact.email}`}>{site.contact.email}</a></li>
+              )}
+              {isSet(site.contact.phone) && (
+                <li><a class="footer__link" href={`tel:${phoneHref(site.contact.phone)}`}>{site.contact.phone}</a></li>
+              )}
+              {isSet(place) && <li class="footer__meta">{place}</li>}
+            </ul>
+          )
+        }
+
+        {
+          modes.length > 0 && (
+            <ul class="footer__modes" aria-label={ui.modesLabel}>
+              {modes.map((k) => <li class="chip">{modeLabels[k]}</li>)}
+            </ul>
+          )
+        }
+
+        <a class="btn btn--ghost btn--sm footer__cta" href="/reservation">{site.booking.ctaLabel}</a>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <nav aria-label={ui.footerLegalLabel}>
+        <ul class="footer__legal-links">
+          {
+            site.legalNav.map((lien) => (
+              <li><a class="footer__link footer__link--small" href={lien.href}>{lien.label}</a></li>
+            ))
+          }
+        </ul>
+      </nav>
+      <p class="footer__legal">© {annee} {brandName}. {ui.rights}</p>
+      <p class="footer__legal footer__legal--muted">{ui.healthNotice}</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--space-3xl);
+    padding-block: var(--space-2xl) var(--space-l);
+    background-color: var(--c-bg-deep);
+    background-image: radial-gradient(48rem 24rem at 85% 0%, color-mix(in srgb, var(--halo-1) calc(var(--halo-strength) * 7%), transparent), transparent 60%);
+    border-top: 1px solid var(--c-border);
+  }
+
+  .footer__top {
+    display: grid;
+    gap: var(--space-xl);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 48em) {
+    .footer__top { grid-template-columns: 1fr 1fr; }
+  }
+  @media (min-width: 62em) {
+    .footer__top {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.8fr) minmax(0, 1fr);
+      gap: var(--space-2xl);
+    }
+  }
+
+  .footer__brand { display: flex; flex-direction: column; gap: var(--space-xs); }
+
+  .footer__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    align-self: flex-start;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: var(--label-transform);
+    text-decoration: none;
+    color: var(--c-text);
+    line-height: 1;
+  }
+  .footer__logo-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    flex: none;
+    color: var(--c-text-on-accent);
+    background: var(--c-accent);
+    border-radius: var(--radius-s);
+  }
+  .footer__logo-mark :global(svg) { width: 1.1rem; height: 1.1rem; }
+
+  .footer__tagline {
+    font-family: var(--font-label);
+    font-size: var(--step-0);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--label-transform);
+    color: var(--c-accent);
+  }
+
+  .footer__social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin-top: var(--space-2xs);
+    list-style: none;
+    padding: 0;
+  }
+  .footer__social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    color: var(--c-text-soft);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-s);
+    transition: color var(--transition), border-color var(--transition), transform var(--transition);
+  }
+  .footer__social-link :global(svg) { width: 1.25rem; height: 1.25rem; }
+  .footer__social-link:hover {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+    transform: translateY(-2px);
+  }
+
+  .footer__col { display: flex; flex-direction: column; gap: var(--space-xs); }
+
+  .footer__title {
+    font-family: var(--font-label);
+    font-size: var(--step-small);
+    font-weight: 600;
+    letter-spacing: var(--tracking-widest);
+    text-transform: var(--label-transform);
+    color: var(--c-text-muted);
+  }
+
+  .footer__list { display: grid; gap: var(--space-3xs); list-style: none; margin: 0; padding: 0; }
+
+  .footer__link {
+    display: inline-block;
+    padding-block: 0.35rem;
+    font-size: var(--step-0);
+    text-decoration: none;
+    color: var(--c-text-soft);
+    transition: color var(--transition);
+    overflow-wrap: anywhere;
+  }
+  .footer__link:hover { color: var(--c-accent); text-decoration: underline; text-underline-offset: 0.2em; }
+  .footer__link--small { font-size: var(--step-small); }
+
+  .footer__meta { padding-block: 0.35rem; color: var(--c-text-muted); font-size: var(--step-small); }
+
+  .footer__modes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs);
+    margin-top: var(--space-2xs);
+    list-style: none;
+    padding: 0;
+  }
+
+  .footer__cta { align-self: flex-start; margin-top: var(--space-2xs); }
+
+  .footer__bottom {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    margin-top: var(--space-xl);
+    padding-top: var(--space-m);
+    border-top: 1px solid var(--c-border);
+  }
+  .footer__legal-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-m);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .footer__legal { font-size: var(--step-small); color: var(--c-text-soft); }
+  .footer__legal--muted { max-width: 80ch; color: var(--c-text-muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .footer__social-link:hover { transform: none; }
+  }
+</style>

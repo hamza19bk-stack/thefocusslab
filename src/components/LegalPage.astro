@@ -1,0 +1,122 @@
+---
+/**
+ * LegalPage.astro — rendu commun des pages légales (mentions légales, confidentialité).
+ * Une ligne obligatoire non renseignée affiche ui.legalMissing (« (à compléter) »)
+ * avec la classe `legal-missing` (comptée comme avertissement par check.mjs) ;
+ * une ligne facultative non renseignée disparaît.
+ */
+import Base from '../layouts/Base.astro';
+import type { LegalSection } from '../data/content';
+import { ui } from '../data/content';
+import { isSet } from '../lib/utils';
+
+interface Props {
+  seo: { title: string; description: string };
+  title: string;
+  path: string;
+  intro?: string;
+  updated?: string;
+  sections: LegalSection[];
+}
+const { seo, title, path, intro, updated, sections } = Astro.props;
+
+const slug = (s: string) =>
+  s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const isUrl = (v: string) => /^https?:\/\//.test(v);
+---
+
+<Base title={seo.title} description={seo.description} path={path}>
+  <section class="section section--tight hero" aria-labelledby="hero-titre">
+    <div class="container container--narrow">
+      <div class="stack stack--m">
+        <h1 id="hero-titre">{title}</h1>
+        {isSet(intro) && <p class="lead">{intro}</p>}
+        {isSet(updated) && (
+          <p class="note">
+            {ui.updatedLabel} <span class:list={{ 'legal-missing': updated === ui.legalMissing }}>{updated}</span>
+          </p>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--flush-top">
+    <div class="container container--narrow">
+      <div class="prose legal">
+        {
+          sections.map((section) => {
+            const rows = (section.rows ?? []).filter((r) => r.required || isSet(r.value));
+            const list = section.list ?? [];
+            const links = (section.links ?? []).filter((l) => isSet(l.href) && isSet(l.label));
+            return (
+              <Fragment>
+                <h2 id={section.id ?? slug(section.title)}>{section.title}</h2>
+                {(section.paragraphs ?? []).map((p) => (
+                  <p class:list={{ 'legal-missing': p === ui.legalMissing }}>{p}</p>
+                ))}
+                {list.length > 0 && (
+                  <ul>
+                    {list.map((item) => <li>{item}</li>)}
+                  </ul>
+                )}
+                {rows.length > 0 && (
+                  <dl class="legal__rows">
+                    {rows.map((row) => (
+                      <div>
+                        <dt>{row.label}</dt>
+                        <dd>
+                          {isSet(row.value) ? (
+                            isUrl(row.value) ? (
+                              <a href={row.value} rel="noopener noreferrer">{row.value}</a>
+                            ) : (
+                              row.value
+                            )
+                          ) : (
+                            <span class="legal-missing">{ui.legalMissing}</span>
+                          )}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+                {links.length > 0 && (
+                  <ul>
+                    {links.map((l) => (
+                      <li><a href={l.href} rel="noopener noreferrer">{l.label}</a></li>
+                    ))}
+                  </ul>
+                )}
+                {section.link && (
+                  <p>
+                    {section.link.before} <a href={section.link.href}>{section.link.label}</a>.
+                  </p>
+                )}
+              </Fragment>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .legal__rows {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    border-top: var(--border-1);
+  }
+  .legal__rows div {
+    display: grid;
+    gap: var(--space-3xs) var(--space-m);
+    padding-block: var(--space-2xs);
+    border-bottom: var(--border-1);
+  }
+  @media (min-width: 40em) {
+    .legal__rows div { grid-template-columns: 16rem minmax(0, 1fr); }
+  }
+  .legal__rows dt { font-weight: 600; color: var(--c-text); }
+  .legal__rows dd { margin: 0; color: var(--c-text-soft); overflow-wrap: anywhere; }
+  .legal-missing { color: var(--c-accent-2); font-style: italic; }
+</style>

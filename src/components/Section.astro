@@ -1,0 +1,86 @@
+---
+/**
+ * Section.astro — enveloppe de section : <section> > .container > en-tête + contenu.
+ *
+ * Props :
+ *   id        (string)  — ancre ; si un titre est fourni, la section est nommée
+ *                         par lui (aria-labelledby = `${id}-titre`).
+ *   eyebrow, title, subtitle (string) — en-tête ; une valeur vide n'est pas rendue.
+ *   variant   'default' | 'alt' | 'panel'
+ *   align     'left' | 'center'
+ *   width     'default' | 'narrow' | 'xs'
+ *   spacing   'default' | 'tight'
+ *   rule      (bool)    — filet lumineux en tête de section
+ *   optional  (string)  — marqueur data-optional (sections pilotées par des
+ *                         données facultatives, contrôlées par scripts/check.mjs)
+ * Slots : défaut (contenu) ; « actions » (boutons sous le sous-titre).
+ *
+ * Règle : une section sans contenu ne doit jamais être rendue — la page
+ * teste ses données AVANT d'appeler <Section>.
+ */
+import { isSet } from '../lib/utils';
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  subtitle?: string;
+  variant?: 'default' | 'alt' | 'panel';
+  align?: 'left' | 'center';
+  width?: 'default' | 'narrow' | 'xs';
+  spacing?: 'default' | 'tight';
+  rule?: boolean;
+  optional?: string;
+}
+
+const {
+  id,
+  eyebrow,
+  title,
+  subtitle,
+  variant = 'default',
+  align = 'left',
+  width = 'default',
+  spacing = 'default',
+  rule = false,
+  optional,
+} = Astro.props;
+
+const classesSection = [
+  'section',
+  spacing === 'tight' ? 'section--tight' : '',
+  variant === 'alt' ? 'section--alt' : '',
+  variant === 'panel' ? 'section--panel' : '',
+  rule ? 'section--rule' : '',
+].filter(Boolean).join(' ');
+
+const classesContainer = ['container', width === 'narrow' ? 'container--narrow' : '', width === 'xs' ? 'container--xs' : '']
+  .filter(Boolean)
+  .join(' ');
+
+const hasEyebrow = isSet(eyebrow);
+const hasTitle = isSet(title);
+const hasSubtitle = isSet(subtitle);
+const hasActions = Astro.slots.has('actions');
+const idTitre = id && hasTitle ? `${id}-titre` : undefined;
+---
+
+<section id={id} class={classesSection} aria-labelledby={idTitre} data-optional={optional}>
+  <div class={classesContainer}>
+    {
+      (hasEyebrow || hasTitle || hasSubtitle || hasActions) && (
+        <div class:list={['section__head reveal', { 'section__head--center': align === 'center' }]}>
+          {hasEyebrow && <p class="eyebrow">{eyebrow}</p>}
+          {hasTitle && <h2 class="section__title" id={idTitre}>{title}</h2>}
+          {hasSubtitle && <p class="section__subtitle">{subtitle}</p>}
+          {hasActions && (
+            <div class:list={['cluster section__actions', { 'cluster--center': align === 'center' }]}>
+              <slot name="actions" />
+            </div>
+          )}
+        </div>
+      )
+    }
+    <slot />
+  </div>
+</section>

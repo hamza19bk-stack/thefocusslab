@@ -1,0 +1,159 @@
+---
+/**
+ * Base.astro — gabarit unique de toutes les pages.
+ *
+ * Props :
+ *   title       (string, requis)  — titre de la page, SANS le nom de marque (ajouté automatiquement).
+ *   description (string, requis)  — meta description.
+ *   path        (string, requis)  — chemin canonique (« / », « /services »…).
+ *   noindex     (bool, option.)   — ajoute <meta name="robots" content="noindex">.
+ *   bodyClass   (string, option.)
+ * Slot nommé « head » : balises supplémentaires (JSON-LD de page, scripts tiers).
+ *
+ * Aucune valeur non renseignée (isSet) n'est exposée : pas de canonique ni
+ * d'Open Graph absolu tant que site.url est vide, pas d'og:image sans image.
+ * Les commentaires de ce fichier sont en frontmatter ou en commentaires JSX
+ * (accolades + barre-étoile) : un commentaire HTML serait publié.
+ */
+import { site } from '../data/site';
+import { ui } from '../data/content';
+import { isSet, phoneHref } from '../lib/utils';
+import { themeColor, accentColor } from '../lib/theme';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/theme.css';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  noindex?: boolean;
+  bodyClass?: string;
+}
+
+const { title, description, path, noindex = false, bodyClass } = Astro.props;
+
+const brandName = isSet(site.brand.name) ? site.brand.name : ui.brandFallback;
+const fullTitle = title.includes(brandName) ? title : `${title} — ${brandName}`;
+
+const hasUrl = isSet(site.url);
+const canonicalUrl = hasUrl ? new URL(path, site.url).href : '';
+const ogImageUrl = hasUrl && isSet(site.seo.ogImage) ? new URL(site.seo.ogImage, site.url).href : '';
+
+/* Favicon SVG en data URI, aux couleurs du thème (éclair accent sur fond). */
+const faviconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${themeColor}"/><path d="M36.5 6 18 35h11l-2.5 23L46 27H34.5L36.5 6Z" fill="${accentColor}"/></svg>`;
+const faviconHref = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`;
+
+/*
+ * Données structurées de l'entreprise : UNIQUEMENT des valeurs renseignées.
+ * Tant que site.brand.name est vide, aucun bloc n'est publié (pas de nom de repli).
+ */
+const sameAs = Object.values(site.social).filter((u) => isSet(u));
+const jsonLd: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  name: site.brand.name,
+  knowsLanguage: ['fr-FR'],
+};
+if (isSet(site.brand.tagline)) jsonLd.description = site.brand.tagline;
+if (hasUrl) {
+  jsonLd['@id'] = `${site.url}/#business`;
+  jsonLd.url = site.url;
+}
+if (ogImageUrl) jsonLd.image = ogImageUrl;
+if (isSet(site.contact.email)) jsonLd.email = site.contact.email;
+if (isSet(site.contact.phone)) jsonLd.telephone = phoneHref(site.contact.phone);
+if (isSet(site.coach.name)) jsonLd.founder = { '@type': 'Person', name: site.coach.name };
+if (sameAs.length > 0) jsonLd.sameAs = sameAs;
+if (isSet(site.contact.city)) {
+  jsonLd.address = { '@type': 'PostalAddress', addressLocality: site.contact.city, addressCountry: 'FR' };
+}
+if (isSet(site.booking.calendlyUrl)) {
+  jsonLd.potentialAction = {
+    '@type': 'ReserveAction',
+    name: site.booking.ctaLabel,
+    target: { '@type': 'EntryPoint', urlTemplate: site.booking.calendlyUrl },
+  };
+}
+const keywords = site.seo.keywords.filter((k) => isSet(k)).join(', ');
+---
+
+<!doctype html>
+<html lang={site.seo.lang} data-design={site.design}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {keywords && <meta name="keywords" content={keywords} />}
+    {isSet(themeColor) && <meta name="theme-color" content={themeColor} />}
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    {noindex && <meta name="robots" content="noindex" />}
+
+    <link rel="icon" href={faviconHref} type="image/svg+xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={brandName} />
+    <meta property="og:locale" content={site.seo.locale} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+    {
+      ogImageUrl && (
+        <Fragment>
+          <meta property="og:image" content={ogImageUrl} />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          <meta name="twitter:image" content={ogImageUrl} />
+        </Fragment>
+      )
+    }
+    <meta name="twitter:card" content={ogImageUrl ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+
+    {isSet(site.brand.name) && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+
+    {/* Marque la présence de JS avant le premier rendu (évite un flash de contenu caché). */}
+    <script is:inline>document.documentElement.classList.add('js');</script>
+
+    <slot name="head" />
+  </head>
+
+  <body class={bodyClass}>
+    <a class="skip-link" href="#contenu">{ui.skipLink}</a>
+
+    <Header />
+
+    <main id="contenu" tabindex="-1">
+      <slot />
+    </main>
+
+    <Footer />
+
+    <script>
+      // Apparition douce au défilement, désactivée si l'utilisateur préfère
+      // moins d'animations ou si IntersectionObserver n'existe pas.
+      const cibles = document.querySelectorAll<HTMLElement>('.reveal');
+      const moinsDAnimations = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (cibles.length && (moinsDAnimations || !('IntersectionObserver' in window))) {
+        cibles.forEach((el) => el.classList.add('is-visible'));
+      } else if (cibles.length) {
+        const observateur = new IntersectionObserver(
+          (entrees) => {
+            entrees.forEach((entree) => {
+              if (entree.isIntersecting) {
+                entree.target.classList.add('is-visible');
+                observateur.unobserve(entree.target);
+              }
+            });
+          },
+          { rootMargin: '0px 0px -10% 0px', threshold: 0.12 },
+        );
+        cibles.forEach((el) => observateur.observe(el));
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+---
+/** Politique de confidentialité — contenu : content.legal.privacy ; valeurs : site.legal. */
+import LegalPage from '../components/LegalPage.astro';
+import { legal } from '../data/content';
+
+const t = legal.privacy;
+---
+
+<LegalPage seo={t.seo} title={t.title} updated={t.updated} sections={t.sections} path="/confidentialite" />

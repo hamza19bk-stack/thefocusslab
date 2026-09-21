@@ -1,0 +1,210 @@
+---
+/**
+ * Accueil — hero, principes, chiffres clés (optionnel), aperçu des services,
+ * méthode, témoignages (optionnel), appel à l'action.
+ * Aucun texte ici : tout vient de src/data/content.ts et src/data/site.ts.
+ */
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site';
+import { home, ui, modeLabels, testimonials, stats } from '../data/content';
+import { isSet } from '../lib/utils';
+import { activeOffers, modesOn, hasCtaNote } from '../lib/data';
+
+const t = home;
+const statItems = stats.filter((s) => isSet(s.value) && isSet(s.label));
+const quotes = testimonials.filter((q) => isSet(q.text) && isSet(q.author));
+---
+
+<Base title={t.seo.title} description={t.seo.description} path="/">
+  <section class="section section--tight hero" aria-labelledby="hero-titre">
+    <div class="container">
+      <div class="grid grid--sidebar grid--gap-l items-center">
+        <div class="stack stack--m">
+          <p class="eyebrow animate-fade-up">{t.hero.eyebrow}</p>
+          <h1 id="hero-titre" class="display animate-fade-up delay-1">
+            {t.hero.titleLead}<br /><span class="mark">{t.hero.titleMark}</span>
+          </h1>
+          <p class="lead animate-fade-up delay-2">{t.hero.lead}</p>
+
+          <div class="cluster animate-fade-up delay-3">
+            <a class="btn btn--primary btn--lg" href="/reservation">
+              <Icon name="calendar" strokeWidth={1.9} />
+              {site.booking.ctaLabel}
+            </a>
+            <a class="btn btn--ghost btn--lg" href="/services">{t.hero.secondaryCta}</a>
+          </div>
+
+          {hasCtaNote && <p class="note animate-fade-up delay-4" data-optional="cta-note">{site.booking.ctaNote}</p>}
+
+          {
+            modesOn.length > 0 && (
+              <ul class="cluster cluster--xs list-reset animate-fade-up delay-4" aria-label={ui.modesLabel}>
+                {modesOn.map((k) => <li class="chip chip--dot">{modeLabels[k]}</li>)}
+              </ul>
+            )
+          }
+        </div>
+
+        {/* Visuel décoratif (remplace une photo) : couleurs posées en CSS, jamais en attributs SVG. */}
+        <div class="visual visual--grid hero__visual animate-fade" aria-hidden="true">
+          <svg class="hero__chart" viewBox="0 0 320 260" preserveAspectRatio="xMidYMid meet" focusable="false">
+            <path class="hero__chart-grid" d="M28 212h264M28 162h264M28 112h264M28 62h264"></path>
+            <g class="hero__chart-bar">
+              <rect x="44" y="168" width="30" height="44" rx="8"></rect>
+              <rect x="94" y="142" width="30" height="70" rx="8"></rect>
+              <rect x="144" y="118" width="30" height="94" rx="8"></rect>
+            </g>
+            <g class="hero__chart-bar hero__chart-bar--on">
+              <rect x="194" y="86" width="30" height="126" rx="8"></rect>
+              <rect x="244" y="52" width="30" height="160" rx="8"></rect>
+            </g>
+            <path class="hero__chart-trend" d="M59 150 109 128 159 104 209 70 259 36"></path>
+            <circle class="hero__chart-dot" cx="259" cy="36" r="6"></circle>
+            <path class="hero__chart-axis" d="M28 212h264"></path>
+          </svg>
+          <p class="hero__visual-label">{t.hero.visualLabel}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Section id="approche" rule eyebrow={t.highlights.eyebrow} title={t.highlights.title} subtitle={t.highlights.subtitle}>
+    <ul class="grid grid--4 grid--gap-s list-reset">
+      {
+        t.highlights.items.map((item, i) => (
+          <li class="card card--hover reveal" style={`--reveal-delay: ${i * 90}ms`}>
+            <span class="icon-badge"><Icon name={item.icon} /></span>
+            <h3 class="card__title">{item.title}</h3>
+            <p class="card__text">{item.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  {
+    statItems.length > 0 && (
+      <Section id="chiffres" variant="alt" optional="stats" eyebrow={t.stats.eyebrow} title={t.stats.title}>
+        <ul class="grid grid--4 grid--gap-s list-reset">
+          {statItems.map((s, i) => (
+            <li class="card card--flat stat reveal" style={`--reveal-delay: ${i * 80}ms`}>
+              <span class="stat__value">{s.value}</span>
+              <span class="stat__label">{s.label}</span>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+
+  {
+    activeOffers.length > 0 && (
+      <Section id="services" variant={statItems.length > 0 ? 'default' : 'alt'} eyebrow={t.offers.eyebrow} title={t.offers.title} subtitle={t.offers.subtitle}>
+        <a slot="actions" class="btn btn--ghost" href="/services">
+          {t.offers.moreLabel}
+          <Icon name="arrow-right" strokeWidth={2} />
+        </a>
+
+        <ul class="grid grid--2 list-reset">
+          {activeOffers.map((offer, i) => (
+            <li class:list={['card card--pad-l card--hover reveal', { 'card--accent': i === 0 }]} style={`--reveal-delay: ${i * 90}ms`}>
+              <span class:list={['icon-badge', { 'icon-badge--2': i === activeOffers.length - 1 && i > 0 }]}>
+                <Icon name={offer.icon} />
+              </span>
+              <h3 class="card__title">{offer.title}</h3>
+              <p class="card__text">{offer.summary}</p>
+              <p class="card__foot">
+                <a class="btn btn--ghost btn--sm" href={`/services#${offer.id}`} aria-label={t.offers.cardCtaAria(offer.title)}>
+                  {t.offers.cardCta}
+                </a>
+              </p>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+
+  <Section id="methode" rule eyebrow={t.method.eyebrow} title={t.method.title} subtitle={t.method.subtitle}>
+    <ol class="grid grid--4 grid--gap-s steps">
+      {
+        t.method.steps.map((step, i) => (
+          <li class:list={['card card--hover reveal', { 'card--featured': i === t.method.steps.length - 1 }]} style={`--reveal-delay: ${i * 90}ms`}>
+            <span class="step-number" aria-hidden="true">{i + 1}</span>
+            <h3 class="card__title"><span class="sr-only">{ui.stepPrefix(i + 1)}</span>{step.title}</h3>
+            <p class="card__text">{step.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  {
+    quotes.length > 0 && (
+      <Section id="temoignages" variant="alt" optional="testimonials" eyebrow={t.testimonials.eyebrow} title={t.testimonials.title} subtitle={t.testimonials.subtitle}>
+        <ul class="grid grid--3 list-reset">
+          {quotes.map((q, i) => (
+            <li class="reveal" style={`--reveal-delay: ${i * 90}ms`}>
+              <figure class="card card--pad-l quote-card">
+                <blockquote><p>{q.text}</p></blockquote>
+                <figcaption>
+                  <span class="quote-card__name">{q.author}</span>
+                  {isSet(q.detail) && <span class="card__meta">{q.detail}</span>}
+                </figcaption>
+              </figure>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+
+  <CtaBand
+    eyebrow={t.cta.eyebrow}
+    title={t.cta.title}
+    lead={t.cta.lead}
+    primaryHref="/reservation"
+    secondaryLabel={t.cta.secondaryCta}
+    secondaryHref="/contact"
+  />
+</Base>
+
+<style>
+  .hero__visual {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-s);
+    padding: var(--space-m);
+    min-height: 0;
+    box-shadow: var(--shadow-l);
+  }
+
+  .hero__chart { width: 100%; height: auto; fill: none; }
+  .hero__chart-grid { stroke: var(--c-border); stroke-width: 1; }
+  .hero__chart-bar { fill: var(--c-surface-3); }
+  .hero__chart-bar--on { fill: var(--c-accent); }
+  .hero__chart-trend {
+    stroke: var(--c-accent-2);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .hero__chart-dot { fill: var(--c-accent-2); }
+  .hero__chart-axis { stroke: var(--c-border-strong); stroke-width: 2; stroke-linecap: round; }
+
+  .hero__visual-label {
+    margin: 0;
+    font-family: var(--font-label);
+    font-size: var(--step-small);
+    font-weight: 500;
+    letter-spacing: var(--tracking-widest);
+    text-transform: var(--label-transform);
+    color: var(--c-text-muted);
+  }
+
+  .quote-card { height: 100%; }
+</style>

@@ -1,0 +1,91 @@
+/* =========================================================================
+   THÈME CLAIR — exemple « studio bien-être, lumière naturelle »
+   -------------------------------------------------------------------------
+   Pour l'utiliser : copie ce fichier à la place de src/styles/theme.css.
+   Les règles de contraste et la liste des jetons obligatoires sont
+   documentées en tête de theme-dark.example.css et vérifiées par
+   `npm run check` (ce fichier d'exemple est lui aussi contrôlé).
+   ========================================================================= */
+
+/* ---- Polices auto-hébergées (familles « Fraunces Variable » et « Manrope Variable ») ---- */
+@import '@fontsource-variable/fraunces';
+@import '@fontsource-variable/manrope';
+
+:root {
+  --color-scheme: light;
+
+  /* ---- Fonds et surfaces (opaques) ---- */
+  --c-bg:        #F7F4EE;   /* papier chaud */
+  --c-bg-deep:   #EEE9E0;   /* pied de page, menu mobile */
+  --c-surface:   #FFFFFF;   /* cartes */
+  --c-surface-2: #F1EDE6;   /* puces, encarts */
+  --c-surface-3: #D8CFBF;   /* décor (barres du graphique) */
+
+  /* ---- Bordures et voiles ---- */
+  --c-border:        rgba(31, 29, 26, 0.12);
+  --c-border-strong: rgba(31, 29, 26, 0.24);
+  --c-overlay:       rgba(31, 29, 26, 0.05);
+  --c-overlay-alt:   rgba(47, 107, 79, 0.045);
+  --c-grid-line:     rgba(31, 29, 26, 0.06);
+  --c-shadow:        rgba(31, 29, 26, 0.18);
+
+  /* ---- Textes ---- */
+  --c-text:           #1F1D1A;
+  --c-text-soft:      #45413B;
+  --c-text-muted:     #5C574F;
+  --c-text-faint:     #8A847A;  /* décor uniquement */
+  --c-text-on-accent: #FFFFFF;
+
+  /* ---- Accents ---- */
+  --c-accent:        #2F6B4F;   /* vert sauge profond */
+  --c-accent-bright: #245740;   /* survol : plus foncé sur fond clair */
+  --c-accent-dim:    #7FA892;   /* filets, bordures */
+  --c-accent-soft:   rgba(47, 107, 79, 0.10);
+  --c-accent-2:      #A4492A;   /* terre cuite */
+  --c-accent-2-soft: rgba(164, 73, 42, 0.10);
+
+  /* ---- Halos (plus discrets sur fond clair) ---- */
+  --halo-1: #7FA892;
+  --halo-2: #D9A07F;
+  --halo-strength: 0.9;
+
+  /* ---- Dégradés ---- */
+  --grad-accent:  linear-gradient(105deg, var(--c-accent) 0%, #7FA892 60%, var(--c-accent-2) 140%);
+  --grad-surface: linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 60%);
+  --grad-line:    linear-gradient(90deg, transparent, var(--c-accent-dim), transparent);
+  --grad-visual:  linear-gradient(160deg, #FFFFFF, #EFE9DE);
+
+  /* ---- Ombres (douces, teintées) ---- */
+  --shadow-xs: 0 1px 2px rgba(31, 29, 26, 0.06);
+  --shadow-s:  0 4px 14px rgba(31, 29, 26, 0.06);
+  --shadow-m:  0 14px 30px -12px rgba(31, 29, 26, 0.16);
+  --shadow-l:  0 30px 60px -24px rgba(31, 29, 26, 0.22);
+  --shadow-accent: 0 12px 28px -14px rgba(47, 107, 79, 0.55);
+  --ring: 0 0 0 3px rgba(47, 107, 79, 0.30);
+
+  /* ---- Impression ---- */
+  --c-print-bg:   #FFFFFF;
+  --c-print-text: #000000;
+
+  /* ---- Polices ---- */
+  --font-display: 'Fraunces Variable', 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-label: var(--font-body);     /* boutons, sur-titres, navigation */
+  --font-body: 'Manrope Variable', 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Menlo, Consolas, monospace;
+
+  /* ---- Rayons ---- */
+  --radius-xs: 8px;
+  --radius-s: 12px;
+  --radius-m: 18px;
+  --radius-l: 26px;
+  --radius-xl: 36px;
+  --radius-pill: 999px;
+  --radius-btn: var(--radius-pill);
+
+  /* ---- Variables de style ---- */
+  --heading-transform: none;
+  --heading-weight: 600;
+  --heading-tracking: -0.015em;
+  --display-leading: 1.02;
+  --label-transform: uppercase;
+}

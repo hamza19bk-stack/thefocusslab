@@ -1,0 +1,274 @@
+---
+/**
+ * Header.astro — en-tête collant : logo, navigation principale, bouton de réservation.
+ * Aucune prop : navigation depuis site.nav, libellés depuis content.ui.
+ */
+import { site } from '../data/site';
+import { ui } from '../data/content';
+import { isSet } from '../lib/utils';
+import Icon from './Icon.astro';
+
+const normaliser = (chemin: string) => {
+  const sansSlash = chemin.replace(/\/+$/, '');
+  return sansSlash === '' ? '/' : sansSlash;
+};
+const cheminActuel = normaliser(Astro.url.pathname);
+const estActif = (href: string) => normaliser(href) === cheminActuel;
+
+const brandName = isSet(site.brand.name) ? site.brand.name : ui.brandFallback;
+---
+
+<header class="site-header" data-header data-menu-open={ui.menuOpen} data-menu-close={ui.menuClose}>
+  <a class="brand" href="/" aria-label={`${brandName} — ${ui.homeLink}`}>
+    <span class="brand__mark"><Icon name="bolt" /></span>
+    <span class="brand__name">{brandName}</span>
+  </a>
+
+  <nav class="nav" id="navigation-principale" aria-label={ui.navLabel}>
+    <ul class="nav__list">
+      {
+        site.nav.map((lien) => (
+          <li>
+            <a class="nav__link" href={lien.href} aria-current={estActif(lien.href) ? 'page' : undefined} data-nav-link>
+              {lien.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <a class="btn btn--primary btn--sm nav__cta" href="/reservation" data-nav-link>
+      {site.booking.ctaShortLabel}
+    </a>
+  </nav>
+
+  <button
+    class="burger"
+    type="button"
+    aria-expanded="false"
+    aria-controls="navigation-principale"
+    aria-label={ui.menuOpen}
+    data-burger
+  >
+    <span class="burger__box" aria-hidden="true">
+      <span class="burger__bar"></span>
+      <span class="burger__bar"></span>
+      <span class="burger__bar"></span>
+    </span>
+  </button>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-s);
+    min-height: var(--header-h);
+    padding-inline: var(--gutter);
+    background: color-mix(in srgb, var(--c-bg) 82%, transparent);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid var(--c-border);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: var(--c-text);
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: var(--label-transform);
+    line-height: 1;
+    z-index: var(--z-menu);
+  }
+  .brand__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    flex: none;
+    color: var(--c-text-on-accent);
+    background: var(--c-accent);
+    border-radius: var(--radius-s);
+    transition: transform var(--transition);
+  }
+  .brand__mark :global(svg) { width: 1.1rem; height: 1.1rem; }
+  .brand:hover .brand__mark { transform: rotate(-8deg) scale(1.06); }
+  .brand__name { padding-top: 0.1em; }
+
+  .nav__list {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav__link {
+    position: relative;
+    display: inline-block;
+    padding: 0.55rem 0.7rem;
+    font-family: var(--font-label);
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: var(--label-transform);
+    text-decoration: none;
+    color: var(--c-text-soft);
+    border-radius: var(--radius-s);
+    transition: color var(--transition);
+  }
+  .nav__link::after {
+    content: '';
+    position: absolute;
+    left: 0.7rem;
+    right: 0.7rem;
+    bottom: 0.25rem;
+    height: 2px;
+    background: var(--c-accent);
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur) var(--ease-out);
+  }
+  .nav__link:hover { color: var(--c-text); }
+  .nav__link:hover::after { transform: scaleX(1); }
+  .nav__link[aria-current='page'] { color: var(--c-accent); }
+  .nav__link[aria-current='page']::after { transform: scaleX(1); }
+
+  .burger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    cursor: pointer;
+    color: var(--c-text);
+    background: transparent;
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-s);
+    transition: border-color var(--transition), color var(--transition);
+    z-index: var(--z-menu);
+  }
+  .burger:hover { border-color: var(--c-accent); color: var(--c-accent); }
+
+  .burger__box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 20px;
+    height: 14px;
+  }
+  .burger__bar {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: currentColor;
+    border-radius: 2px;
+    transition: transform var(--dur) var(--ease-out), opacity var(--dur-fast) linear;
+  }
+  .site-header[data-open] .burger__bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .site-header[data-open] .burger__bar:nth-child(2) { opacity: 0; }
+  .site-header[data-open] .burger__bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  @media (max-width: 61.999em) {
+    .nav {
+      position: fixed;
+      inset: 0;
+      z-index: calc(var(--z-menu) - 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: var(--space-l);
+      padding: calc(var(--header-h) + var(--space-l)) var(--gutter) var(--space-2xl);
+      background-color: var(--c-bg-deep);
+      background-image: radial-gradient(40rem 26rem at 80% 0%, color-mix(in srgb, var(--halo-1) calc(var(--halo-strength) * 12%), transparent), transparent 62%);
+      overflow-y: auto;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-1.5rem);
+      transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+    }
+    .site-header[data-open] .nav {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      transition-delay: 0s;
+    }
+    .nav__list {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-2xs);
+    }
+    .nav__link {
+      display: block;
+      padding: 0.85rem 0;
+      font-size: clamp(1.6rem, 8vw, 2.2rem);
+      border-bottom: 1px solid var(--c-border);
+    }
+    .nav__link::after { display: none; }
+    .nav__cta { align-self: flex-start; }
+  }
+
+  @media (min-width: 62em) {
+    .site-header { gap: var(--space-m); }
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: var(--space-m);
+    }
+    .burger { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav { transition: none; }
+    .brand:hover .brand__mark { transform: none; }
+  }
+</style>
+
+<script>
+  const entete = document.querySelector<HTMLElement>('[data-header]');
+  const burger = document.querySelector<HTMLButtonElement>('[data-burger]');
+  const liens = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]');
+  const desktop = window.matchMedia('(min-width: 62em)');
+
+  if (entete && burger) {
+    const libelleOuvrir = entete.dataset.menuOpen ?? '';
+    const libelleFermer = entete.dataset.menuClose ?? '';
+
+    const definirEtat = (ouvert: boolean) => {
+      entete.toggleAttribute('data-open', ouvert);
+      burger.setAttribute('aria-expanded', String(ouvert));
+      burger.setAttribute('aria-label', ouvert ? libelleFermer : libelleOuvrir);
+      document.body.style.overflow = ouvert ? 'hidden' : '';
+    };
+
+    const fermer = (rendreLeFocus = false) => {
+      if (!entete.hasAttribute('data-open')) return;
+      definirEtat(false);
+      if (rendreLeFocus) burger.focus();
+    };
+
+    burger.addEventListener('click', () => definirEtat(!entete.hasAttribute('data-open')));
+    liens.forEach((lien) => lien.addEventListener('click', () => fermer()));
+    document.addEventListener('keydown', (evenement) => {
+      if (evenement.key === 'Escape') fermer(true);
+    });
+    desktop.addEventListener('change', () => {
+      if (desktop.matches) fermer();
+    });
+  }
+</script>

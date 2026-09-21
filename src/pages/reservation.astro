@@ -1,0 +1,346 @@
+---
+/**
+ * Réservation — hero + récapitulatif, étapes après réservation, préparation,
+ * module de réservation, FAQ, appel à l'action.
+ *
+ * Module (#creneaux) :
+ *   - site.booking.calendlyUrl renseigné => encart de consentement : le widget Calendly (tiers
+ *     déposant des cookies) n'est chargé qu'APRÈS un clic sur « Afficher le calendrier de
+ *     réservation ». Aucun script ni feuille de style Calendly dans le HTML initial (contrôlé
+ *     par check.mjs). Sans JavaScript, le bouton reste masqué et le lien direct vers Calendly
+ *     (nouvel onglet) reste disponible ;
+ *   - sinon => encart de réservation par e-mail / téléphone / WhatsApp (chaque bouton
+ *     n'apparaît que si la coordonnée est renseignée) ;
+ *   - sinon (aucune coordonnée) => simple message neutre, sans bouton.
+ * Les textes des étapes sont vrais dans les deux modes (aucun automatisme promis).
+ */
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Faq from '../components/Faq.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site';
+import { booking, ui, modeLabels } from '../data/content';
+import { isSet } from '../lib/utils';
+import {
+  modesOn, hasCtaNote, hasCalendly, hasEmail, hasPhone, hasWhatsapp, telHref, mailto, visibleFaq, faqJsonLd,
+} from '../lib/data';
+
+const t = booking;
+const faq = visibleFaq(t.faq.items);
+const calendlyUrl: string = site.booking.calendlyUrl;
+const emailHref = mailto(t.module.emailSubject, t.module.emailBody);
+const hasChannel = hasEmail || hasPhone || hasWhatsapp;
+const prepareItems = site.contact.modes.online ? [...t.prepare.items, t.prepare.onlineItem] : t.prepare.items;
+const responseTime = isSet(site.contact.responseTime) ? site.contact.responseTime : '';
+---
+
+<Base title={t.seo.title} description={t.seo.description} path="/reservation">
+  <Fragment slot="head">
+    {faq.length > 0 && <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd(faq))} />}
+  </Fragment>
+
+  <section class="section section--tight hero" aria-labelledby="hero-titre">
+    <div class="container">
+      <div class="grid grid--sidebar grid--gap-l items-start">
+        <div class="stack stack--m">
+          <p class="eyebrow animate-fade-up">{t.hero.eyebrow}</p>
+          <h1 id="hero-titre" class="animate-fade-up delay-1">{t.hero.titleLead}<br /><span class="mark">{t.hero.titleMark}</span></h1>
+          <p class="lead animate-fade-up delay-2">{t.hero.lead}</p>
+
+          <div class="cluster animate-fade-up delay-3">
+            <a class="btn btn--primary btn--lg" href="#creneaux">
+              <Icon name="calendar" strokeWidth={1.9} />
+              {hasCalendly ? t.hero.ctaCalendly : t.hero.ctaFallback}
+            </a>
+            <a class="btn btn--ghost btn--lg" href="/services">{t.hero.secondaryCta}</a>
+          </div>
+
+          {hasCtaNote && <p class="note animate-fade-up delay-4" data-optional="cta-note">{site.booking.ctaNote}</p>}
+
+          {
+            modesOn.length > 0 && (
+              <ul class="cluster cluster--xs list-reset animate-fade-up delay-4" aria-label={ui.modesLabel}>
+                {modesOn.map((k) => <li class="chip chip--dot">{modeLabels[k]}</li>)}
+              </ul>
+            )
+          }
+        </div>
+
+        <aside class="card card--accent card--pad-l card--gap-s card--raised booking-card animate-fade" aria-labelledby="recap-titre">
+          <p class="eyebrow eyebrow--plain">{t.recap.eyebrow}</p>
+          <h2 id="recap-titre" class="card__title">{t.recap.title}</h2>
+          <ul class="list-check">
+            {t.recap.items.map((item) => <li>{item}</li>)}
+          </ul>
+          {
+            hasCalendly && (
+              <p class="card__meta">
+                {t.recap.noSlot} <a href="/contact">{t.recap.noSlotLink}</a>
+              </p>
+            )
+          }
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <Section id="apres" rule eyebrow={t.after.eyebrow} title={t.after.title} subtitle={t.after.subtitle}>
+    <ol class="grid grid--4 grid--gap-s steps">
+      {
+        t.after.steps.map((step, i) => (
+          <li class="card card--hover reveal" style={`--reveal-delay: ${i * 90}ms`}>
+            <span class="step-number" aria-hidden="true">{i + 1}</span>
+            <h3 class="card__title"><span class="sr-only">{ui.stepPrefix(i + 1)}</span>{step.title}</h3>
+            <p class="card__text">{step.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  <Section id="preparer" variant="alt" eyebrow={t.prepare.eyebrow} title={t.prepare.title} subtitle={t.prepare.subtitle}>
+    <ul class:list={['grid grid--gap-s list-reset', prepareItems.length > 2 ? 'grid--3' : 'grid--2']}>
+      {
+        prepareItems.map((item, i) => (
+          <li class="card card--hover reveal" style={`--reveal-delay: ${i * 90}ms`}>
+            <span class:list={['icon-badge', { 'icon-badge--2': i === 1 }]}><Icon name={item.icon} /></span>
+            <h3 class="card__title">{item.title}</h3>
+            <p class="card__text">{item.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="grid grid--sidebar-left grid--gap-l items-start section__foot">
+      <div class="card card--flat card--pad-l reveal">
+        <h3 class="card__title">{t.prepare.checklistTitle}</h3>
+        <ul class="list-check">
+          {t.prepare.checklist.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+      <div class="callout reveal" style="--reveal-delay: 90ms">
+        <div class="stack stack--s">
+          <p class="eyebrow eyebrow--plain">{t.prepare.goodToKnowEyebrow}</p>
+          <p class="text-soft">{t.prepare.goodToKnow}</p>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <Section
+    id="creneaux"
+    width="narrow"
+    eyebrow={t.module.eyebrow}
+    title={hasCalendly ? t.module.calendlyTitle : hasChannel ? t.module.fallbackTitle : t.module.closedTitle}
+    subtitle={hasCalendly ? t.module.calendlySubtitle : hasChannel ? t.module.fallbackSubtitle : t.module.closedSubtitle}
+  >
+    {
+      hasCalendly ? (
+        <div class="stack stack--s" data-calendly data-url={calendlyUrl} data-loading={t.module.loading} data-error={t.module.loadError}>
+          <div class="card card--accent card--pad-l card--gap-m card--raised" data-calendly-consent>
+            <span class="icon-badge icon-badge--round"><Icon name="calendar" /></span>
+            <div class="stack stack--xs">
+              <h3 class="card__title">{t.module.consentTitle}</h3>
+              <p class="card__text">{t.module.consentText}</p>
+              <p class="card__meta">
+                {t.module.consentLinkBefore} <a href="/confidentialite#reservation-en-ligne">{t.module.consentLink}</a>.
+              </p>
+            </div>
+            <div class="cluster">
+              <button type="button" class="btn btn--primary btn--lg" data-calendly-load aria-controls="calendly-widget" hidden>
+                <Icon name="calendar" strokeWidth={1.9} />
+                {t.module.loadCta}
+              </button>
+              <a class="btn btn--ghost" href={calendlyUrl} target="_blank" rel="noopener noreferrer">
+                {t.module.openCta} <span class="sr-only">{ui.newWindow}</span>
+              </a>
+            </div>
+            <div class="note" role="status" data-calendly-status></div>
+          </div>
+          <div id="calendly-widget" class="booking-widget" role="region" aria-label={t.module.widgetLabel} tabindex="-1" data-calendly-target hidden></div>
+        </div>
+      ) : (
+        hasChannel && (
+          <div class="card card--accent card--pad-l card--gap-m card--raised">
+            <span class="icon-badge icon-badge--round"><Icon name="time" /></span>
+            <div class="stack stack--xs">
+              <h3 class="card__title">{t.module.fallbackCardTitle}</h3>
+              <p class="card__text">{t.module.fallbackCardText}</p>
+              {responseTime && <p class="card__meta">{ui.responseTimeLabel} {responseTime}</p>}
+            </div>
+
+            <div class="cluster">
+              {hasEmail && (
+                <a class="btn btn--primary btn--lg" href={emailHref}>
+                  <Icon name="mail" strokeWidth={1.9} />
+                  {t.module.emailCta}
+                </a>
+              )}
+              {hasPhone && (
+                <a class="btn btn--ghost btn--lg" href={telHref}>
+                  <Icon name="phone" strokeWidth={1.9} />
+                  {t.module.phoneCta}
+                </a>
+              )}
+              {hasWhatsapp && (
+                <a class="btn btn--quiet btn--lg" href={site.social.whatsapp} target="_blank" rel="noopener noreferrer" data-optional="whatsapp">
+                  {t.module.whatsappCta} <span class="sr-only">{ui.newWindow}</span>
+                </a>
+              )}
+            </div>
+
+            {(hasEmail || hasPhone) && (
+              <dl class="coords">
+                {hasEmail && (
+                  <div>
+                    <dt>{t.module.emailLabel}</dt>
+                    <dd><a href={`mailto:${site.contact.email}`}>{site.contact.email}</a></dd>
+                  </div>
+                )}
+                {hasPhone && (
+                  <div>
+                    <dt>{t.module.phoneLabel}</dt>
+                    <dd><a href={telHref}>{site.contact.phone}</a></dd>
+                  </div>
+                )}
+              </dl>
+            )}
+          </div>
+        )
+      )
+    }
+  </Section>
+
+  {
+    faq.length > 0 && (
+      <Section id="faq" variant="alt" width="narrow" eyebrow={t.faq.eyebrow} title={t.faq.title} subtitle={t.faq.subtitle}>
+        <Faq items={faq} moreHref="/contact" />
+      </Section>
+    )
+  }
+
+  <CtaBand
+    eyebrow={t.cta.eyebrow}
+    title={t.cta.title}
+    lead={t.cta.lead}
+    primaryHref="#creneaux"
+    secondaryLabel={t.cta.secondaryCta}
+    secondaryHref="/contact"
+  />
+</Base>
+
+<script>
+  /*
+   * Chargement du widget Calendly UNIQUEMENT après un clic explicite (vie privée :
+   * Calendly dépose des cookies). Ne fait rien si le module est absent de la page
+   * (calendlyUrl vide) : aucune erreur JavaScript.
+   */
+  type CalendlyApi = { initInlineWidget: (o: { url: string; parentElement: HTMLElement; resize?: boolean }) => void };
+
+  const racine = document.querySelector<HTMLElement>('[data-calendly]');
+  const bouton = racine?.querySelector<HTMLButtonElement>('[data-calendly-load]');
+  const cible = racine?.querySelector<HTMLElement>('[data-calendly-target]');
+  const statut = racine?.querySelector<HTMLElement>('[data-calendly-status]');
+  const url = racine?.dataset.url ?? '';
+
+  if (racine && bouton && cible && url) {
+    bouton.hidden = false;
+
+    const echec = () => {
+      if (statut) statut.textContent = racine.dataset.error ?? '';
+      bouton.disabled = false;
+      bouton.removeAttribute('aria-busy');
+    };
+
+    let charge = false;
+    bouton.addEventListener('click', () => {
+      if (charge) return;
+      charge = true;
+      bouton.disabled = true;
+      bouton.setAttribute('aria-busy', 'true');
+      if (statut) statut.textContent = racine.dataset.loading ?? '';
+
+      if (!document.querySelector('link[data-calendly-css]')) {
+        const style = document.createElement('link');
+        style.rel = 'stylesheet';
+        style.href = 'https://assets.calendly.com/assets/external/widget.css';
+        style.dataset.calendlyCss = '';
+        document.head.append(style);
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://assets.calendly.com/assets/external/widget.js';
+      script.async = true;
+      script.onload = () => {
+        const api = (window as unknown as { Calendly?: CalendlyApi }).Calendly;
+        if (!api?.initInlineWidget) {
+          charge = false;
+          echec();
+          return;
+        }
+        cible.hidden = false;
+        api.initInlineWidget({ url, parentElement: cible, resize: true });
+        bouton.hidden = true;
+        if (statut) statut.textContent = '';
+        cible.focus();
+      };
+      script.onerror = () => {
+        charge = false;
+        script.remove();
+        echec();
+      };
+      document.head.append(script);
+    });
+  }
+</script>
+
+<style>
+  @media (min-width: 62em) {
+    .booking-card {
+      position: sticky;
+      top: calc(var(--header-h) + var(--space-s));
+    }
+  }
+
+  .booking-widget {
+    min-width: 0;
+    width: 100%;
+    min-height: 44rem;
+    border: var(--border-1);
+    border-radius: var(--radius-l);
+    background-color: var(--c-surface);
+    overflow: hidden;
+  }
+
+  .coords {
+    display: grid;
+    gap: var(--space-2xs);
+    margin: 0;
+    padding-top: var(--space-s);
+    border-top: var(--border-1);
+  }
+  .coords div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-3xs) var(--space-xs);
+  }
+  .coords dt {
+    min-width: 7rem;
+    font-family: var(--font-label);
+    font-size: var(--step-small);
+    font-weight: 500;
+    letter-spacing: var(--tracking-widest);
+    text-transform: var(--label-transform);
+    color: var(--c-text-muted);
+  }
+  .coords dd { margin: 0; }
+  .coords a {
+    color: var(--c-text);
+    text-decoration-color: var(--c-accent-dim);
+    text-underline-offset: 0.25em;
+    overflow-wrap: anywhere;
+  }
+  .coords a:hover { color: var(--c-accent); }
+</style>

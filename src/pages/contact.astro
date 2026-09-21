@@ -1,0 +1,294 @@
+---
+/**
+ * Contact — page SANS formulaire : liens directs (mailto:, tel:, WhatsApp) et réseaux.
+ * Chaque carte de contact n'est rendue que si la coordonnée est renseignée (isSet) ;
+ * la section Réseaux disparaît si aucun réseau n'est renseigné.
+ */
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site';
+import { contact, ui, modeLabels } from '../data/content';
+import { isSet } from '../lib/utils';
+import { modesOn, hasEmail, hasPhone, hasWhatsapp, telHref, mailto } from '../lib/data';
+
+const t = contact;
+const emailHref = mailto(t.channels.emailSubject, t.channels.emailBody);
+const responseTime = isSet(site.contact.responseTime) ? site.contact.responseTime : '';
+const hours = isSet(site.contact.hours) ? site.contact.hours : '';
+
+const reseaux = [
+  { cle: 'instagram', label: 'Instagram', url: site.social.instagram },
+  { cle: 'facebook', label: 'Facebook', url: site.social.facebook },
+  { cle: 'tiktok', label: 'TikTok', url: site.social.tiktok },
+  { cle: 'youtube', label: 'YouTube', url: site.social.youtube },
+  { cle: 'linkedin', label: 'LinkedIn', url: site.social.linkedin },
+].filter((r) => isSet(r.url));
+---
+
+<Base title={t.seo.title} description={t.seo.description} path="/contact">
+  <section class="section section--tight hero" aria-labelledby="hero-titre">
+    <div class="container">
+      <div class="grid grid--sidebar grid--gap-l items-start">
+        <div class="stack stack--m">
+          <p class="eyebrow animate-fade-up">{t.hero.eyebrow}</p>
+          <h1 id="hero-titre" class="animate-fade-up delay-1">{t.hero.titleLead}<br /><span class="mark">{t.hero.titleMark}</span></h1>
+          <p class="lead animate-fade-up delay-2">{t.hero.lead}</p>
+
+          {
+            (hasEmail || hasPhone) && (
+              <div class="cluster animate-fade-up delay-3">
+                {hasEmail && (
+                  <a class="btn btn--primary btn--lg" href={emailHref}>
+                    <Icon name="mail" strokeWidth={1.9} />
+                    {t.hero.emailCta}
+                  </a>
+                )}
+                {hasPhone && (
+                  <a class:list={['btn btn--lg', hasEmail ? 'btn--ghost' : 'btn--primary']} href={telHref}>
+                    <Icon name="phone" strokeWidth={1.9} />
+                    {t.hero.phoneCta}
+                  </a>
+                )}
+              </div>
+            )
+          }
+
+          {
+            modesOn.length > 0 && (
+              <ul class="cluster cluster--xs list-reset animate-fade-up delay-4" aria-label={ui.modesLabel}>
+                {modesOn.map((k) => <li class="chip chip--dot">{modeLabels[k]}</li>)}
+              </ul>
+            )
+          }
+        </div>
+
+        <aside class="card card--accent card--pad-l card--gap-s card--raised contact-card animate-fade" aria-labelledby="conseils-titre">
+          <p class="eyebrow eyebrow--plain">{t.tips.eyebrow}</p>
+          <h2 id="conseils-titre" class="card__title">{t.tips.title}</h2>
+          <ul class="list-check">
+            {t.tips.items.map((item) => <li>{item}</li>)}
+          </ul>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <Section id="moyens" rule eyebrow={t.channels.eyebrow} title={t.channels.title} subtitle={t.channels.subtitle}>
+    <ul class="grid grid--2 list-reset contact-grid">
+      {
+        hasEmail && (
+          <li class="reveal">
+            <a class="card card--pad-l card--featured contact-tile" href={emailHref}>
+              <span class="icon-badge"><Icon name="mail" /></span>
+              <h3 class="card__title contact-tile__title">{t.channels.email.title}</h3>
+              <p class="contact-tile__value">{site.contact.email}</p>
+              <p class="card__text">{t.channels.email.text}</p>
+              <p class="card__foot contact-tile__action" aria-hidden="true">{t.channels.email.action}<Icon name="arrow-right" strokeWidth={2} /></p>
+            </a>
+          </li>
+        )
+      }
+      {
+        hasPhone && (
+          <li class="reveal" style="--reveal-delay: 90ms">
+            <a class="card card--pad-l contact-tile" href={telHref}>
+              <span class="icon-badge icon-badge--2"><Icon name="phone" /></span>
+              <h3 class="card__title contact-tile__title">{t.channels.phone.title}</h3>
+              <p class="contact-tile__value">{site.contact.phone}</p>
+              <p class="card__text">{t.channels.phone.text}</p>
+              <p class="card__foot contact-tile__action" aria-hidden="true">{t.channels.phone.action}<Icon name="arrow-right" strokeWidth={2} /></p>
+            </a>
+          </li>
+        )
+      }
+      {
+        hasWhatsapp && (
+          <li class="reveal" style="--reveal-delay: 180ms" data-optional="whatsapp">
+            <a class="card card--pad-l contact-tile" href={site.social.whatsapp} target="_blank" rel="noopener noreferrer">
+              <span class="icon-badge"><Icon name="whatsapp" /></span>
+              <h3 class="card__title contact-tile__title">{t.channels.whatsapp.title} <span class="sr-only">{ui.newWindow}</span></h3>
+              <p class="contact-tile__value">{t.channels.whatsapp.value}</p>
+              <p class="card__text">{t.channels.whatsapp.text}</p>
+              <p class="card__foot contact-tile__action" aria-hidden="true">{t.channels.whatsapp.action}<Icon name="arrow-right" strokeWidth={2} /></p>
+            </a>
+          </li>
+        )
+      }
+      <li class="reveal" style="--reveal-delay: 270ms">
+        <a class="card card--pad-l contact-tile" href="/reservation">
+          <span class="icon-badge icon-badge--2"><Icon name="calendar" /></span>
+          <h3 class="card__title contact-tile__title">{t.channels.booking.title}</h3>
+          <p class="contact-tile__value">{site.booking.ctaLabel}</p>
+          <p class="card__text">{t.channels.booking.text}</p>
+          <p class="card__foot contact-tile__action" aria-hidden="true">{t.channels.booking.action}<Icon name="arrow-right" strokeWidth={2} /></p>
+        </a>
+      </li>
+    </ul>
+  </Section>
+
+  <Section id="echange" variant="alt">
+    <div class:list={['grid grid--gap-l items-start', { 'grid--2': responseTime || hours }]}>
+      <div class="callout reveal">
+        <div class="stack stack--s measure">
+          <p class="eyebrow eyebrow--plain">{t.exchange.eyebrow}</p>
+          <h2 class="h3">{t.exchange.title}</h2>
+          <p class="text-soft">{t.exchange.text}</p>
+          <p class="note">{t.exchange.privacy}</p>
+        </div>
+      </div>
+      {
+        (responseTime || hours) && (
+          <div class="card card--pad-l card--gap-s reveal" style="--reveal-delay: 90ms" data-optional="practical">
+            <p class="eyebrow eyebrow--plain">{t.exchange.practicalEyebrow}</p>
+            <h2 class="h3">{t.exchange.practicalTitle}</h2>
+            <ul class="list-check">
+              {responseTime && <li>{ui.responseTimeLabel} {responseTime}</li>}
+              {hours && <li>{ui.hoursLabel} {hours}</li>}
+            </ul>
+          </div>
+        )
+      }
+    </div>
+  </Section>
+
+  {
+    modesOn.length > 0 && (
+      <Section id="zone" eyebrow={t.zone.eyebrow} title={t.zone.title} subtitle={t.zone.subtitle}>
+        <div class="grid grid--sidebar-left grid--gap-l items-center">
+          <div class="visual visual--grid visual--ratio reveal" aria-hidden="true">
+            <div class="zone-pin"><Icon name="pin" strokeWidth={1.6} /></div>
+          </div>
+          <div class="stack stack--m reveal" style="--reveal-delay: 90ms">
+            <p class="text-soft measure">{t.zone.text}</p>
+            <ul class="stack stack--xs list-reset">
+              {modesOn.map((k) => (
+                <li class="card card--flat zone-item">
+                  <h3 class="h4 zone-item__title">{modeLabels[k]}</h3>
+                  <p class="card__text">{t.zone.items[k]}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    reseaux.length > 0 && (
+      <Section id="reseaux" variant="alt" optional="social" eyebrow={t.social.eyebrow} title={t.social.title} subtitle={t.social.subtitle}>
+        <ul class="grid grid--auto grid--gap-s list-reset" style="--grid-min: 14rem">
+          {reseaux.map((reseau, i) => (
+            <li class="reveal" style={`--reveal-delay: ${i * 70}ms`}>
+              <a class="card card--hover social-tile" href={reseau.url} target="_blank" rel="noopener noreferrer me">
+                <span class="icon-badge icon-badge--round"><Icon name={reseau.cle} /></span>
+                <h3 class="card__title social-tile__title">{reseau.label} <span class="sr-only">{ui.newWindow}</span></h3>
+                <p class="card__text">{t.social.text}</p>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+
+  <CtaBand
+    eyebrow={t.cta.eyebrow}
+    title={t.cta.title}
+    lead={t.cta.lead}
+    primaryHref="/reservation"
+    secondaryLabel={t.cta.secondaryCta}
+    secondaryHref="/services"
+    note
+  />
+</Base>
+
+<style>
+  @media (min-width: 62em) {
+    .contact-card {
+      position: sticky;
+      top: calc(var(--header-h) + var(--space-s));
+    }
+  }
+
+  .contact-grid { align-items: stretch; }
+  .contact-grid > li { display: flex; }
+
+  .contact-tile {
+    --card-gap: var(--space-2xs);
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
+  }
+  .contact-tile .icon-badge { margin-bottom: var(--space-2xs); }
+  .contact-tile__title {
+    font-size: var(--step-1);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--label-transform);
+    color: var(--c-text-muted);
+  }
+  .contact-tile__value {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    font-weight: 600;
+    line-height: var(--leading-snug);
+    color: var(--c-text);
+    overflow-wrap: anywhere;
+    transition: color var(--transition);
+  }
+  .contact-tile:hover .contact-tile__value,
+  .contact-tile:focus-visible .contact-tile__value { color: var(--c-accent); }
+  .contact-tile__action {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    font-family: var(--font-label);
+    font-size: var(--step-small);
+    font-weight: 500;
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--label-transform);
+    color: var(--c-accent);
+  }
+  .contact-tile__action :global(svg) {
+    width: 1.1em;
+    height: 1.1em;
+    flex: none;
+    transition: transform var(--transition);
+  }
+  .contact-tile:hover .contact-tile__action :global(svg) { transform: translateX(4px); }
+
+  .zone-pin {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: var(--c-accent);
+    z-index: 1;
+  }
+  .zone-pin :global(svg) {
+    width: 4.5rem;
+    height: 4.5rem;
+    filter: drop-shadow(0 12px 24px var(--c-shadow));
+  }
+
+  .zone-item {
+    --card-gap: var(--space-3xs);
+    border-left: 2px solid color-mix(in srgb, var(--c-accent) 45%, transparent);
+  }
+  .zone-item__title { margin: 0; color: var(--c-text); }
+
+  .social-tile { height: 100%; text-decoration: none; color: inherit; }
+  .social-tile__title {
+    font-size: var(--step-1);
+    letter-spacing: var(--tracking-wide);
+    text-transform: var(--label-transform);
+  }
+  .social-tile:hover .social-tile__title { color: var(--c-accent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .contact-tile:hover .contact-tile__action :global(svg) { transform: none; }
+  }
+</style>

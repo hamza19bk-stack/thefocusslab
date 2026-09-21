@@ -1,0 +1,112 @@
+/* =========================================================================
+   THÈME — src/styles/theme.css  (fichier 3/3 à modifier pour un nouveau site)
+   -------------------------------------------------------------------------
+   Identité visuelle COMPLÈTE du site : couleurs, polices, rayons, ombres,
+   halos et variables de style. global.css et les composants ne contiennent
+   aucune couleur en dur : ils ne font que référencer ces jetons.
+
+   Exemples prêts à l'emploi (copie l'un d'eux à la place de ce fichier) :
+     src/styles/themes/theme-dark.example.css   « salle de sport la nuit »
+     src/styles/themes/theme-light.example.css  « studio bien-être, lumière naturelle »
+
+   RÈGLES (vérifiées par `npm run check`) :
+   - tous les jetons listés dans scripts/check.mjs (REQUIRED_TOKENS) sont définis ;
+   - couleurs en hex, rgb()/rgba() ou hsl()/hsla(), éventuellement via var() ;
+   - --c-bg, --c-bg-deep, --c-surface, --c-surface-2 sont OPAQUES ;
+   - --c-text, --c-text-soft, --c-text-muted : contraste >= 4.5:1 sur
+     --c-bg, --c-bg-deep, --c-surface et --c-surface-2 ;
+   - --c-text-on-accent : >= 4.5:1 sur --c-accent et --c-accent-bright ;
+   - --c-accent : >= 3:1 sur --c-bg ; et comme il sert aussi de couleur de
+     texte (sur-titres, liens), il doit atteindre 4.5:1 sur les fonds ;
+   - tout jeton employé dans une déclaration `color:` : >= 4.5:1 sur les fonds.
+   - POLICES (seul endroit à modifier) : les @import @fontsource-variable/…
+     ci-dessous (paquets npm auto-hébergés, installés avec `npm install`)
+     et les familles --font-display / --font-body. Aucune requête vers
+     Google Fonts : les fichiers .woff2 sont servis avec le site.
+     Pour changer de police : `npm install @fontsource-variable/<nom>`,
+     puis remplace l'@import et le nom de famille (« <Nom> Variable »).
+     check.mjs vérifie que chaque famille citée est fournie par un @import.
+   ========================================================================= */
+
+/* ---- Polices auto-hébergées (familles « Inter Variable » et « Oswald Variable ») ---- */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/oswald';
+
+:root {
+  --color-scheme: dark;
+
+  /* ---- Fonds et surfaces (opaques) ---- */
+  --c-bg:        #0B0D10;   /* fond principal (encre) */
+  --c-bg-deep:   #06080A;   /* pied de page, menu mobile */
+  --c-surface:   #13161B;   /* cartes, panneaux */
+  --c-surface-2: #1B2027;   /* puces, encarts dans une carte */
+  --c-surface-3: #242B34;   /* décor (barres du graphique) */
+
+  /* ---- Bordures et voiles (semi-transparents, adaptés au fond) ---- */
+  --c-border:        rgba(255, 255, 255, 0.10);
+  --c-border-strong: rgba(255, 255, 255, 0.20);
+  --c-overlay:       rgba(255, 255, 255, 0.06);   /* survol discret */
+  --c-overlay-alt:   rgba(255, 255, 255, 0.028);  /* bande des sections alternées */
+  --c-grid-line:     rgba(255, 255, 255, 0.05);   /* trame des visuels */
+  --c-shadow:        rgba(0, 0, 0, 0.55);         /* ombres portées (filter) */
+
+  /* ---- Textes ---- */
+  --c-text:           #F2F4F7;
+  --c-text-soft:      #C3CBD6;
+  --c-text-muted:     #A7B0BD;
+  --c-text-faint:     #7C8696;  /* décor uniquement, jamais du texte */
+  --c-text-on-accent: #0B0D10;
+
+  /* ---- Accents ---- */
+  --c-accent:        #C6F24E;   /* VOLT */
+  --c-accent-bright: #D9FF6E;   /* survol */
+  --c-accent-dim:    #9CC431;   /* filets, bordures */
+  --c-accent-soft:   rgba(198, 242, 78, 0.12);
+  --c-accent-2:      #FF6A2B;   /* EMBER */
+  --c-accent-2-soft: rgba(255, 106, 43, 0.14);
+
+  /* ---- Halos lumineux (dégradés radiaux) ---- */
+  --halo-1: var(--c-accent);
+  --halo-2: var(--c-accent-2);
+  --halo-strength: 1;           /* 0 = aucun halo ; 1 = look d'origine */
+
+  /* ---- Dégradés ---- */
+  --grad-accent:  linear-gradient(105deg, var(--c-accent) 0%, #8FE3A2 55%, var(--c-accent-2) 140%);
+  --grad-surface: linear-gradient(160deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015) 55%, transparent);
+  --grad-line:    linear-gradient(90deg, transparent, var(--c-accent-dim), transparent);
+  --grad-visual:  linear-gradient(160deg, #1A2028, #0B0D10);
+
+  /* ---- Ombres ---- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-s:  0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-m:  0 12px 28px -8px rgba(0, 0, 0, 0.55);
+  --shadow-l:  0 28px 60px -18px rgba(0, 0, 0, 0.70);
+  --shadow-accent: 0 12px 34px -12px rgba(198, 242, 78, 0.55);
+  --ring: 0 0 0 3px rgba(198, 242, 78, 0.35);
+
+  /* ---- Impression ---- */
+  --c-print-bg:   #FFFFFF;
+  --c-print-text: #000000;
+
+  /* ---- Polices ---- */
+  --font-display: 'Oswald Variable', 'Oswald', 'Arial Narrow', 'Haettenschweiler', system-ui, sans-serif;
+  --font-label: var(--font-display);  /* boutons, sur-titres, navigation */
+  --font-body: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Menlo, Consolas, monospace;
+
+  /* ---- Rayons ---- */
+  --radius-xs: 6px;
+  --radius-s: 10px;
+  --radius-m: 16px;
+  --radius-l: 24px;
+  --radius-xl: 32px;
+  --radius-pill: 999px;
+  --radius-btn: var(--radius-pill);
+
+  /* ---- Variables de style ---- */
+  --heading-transform: uppercase;   /* titres h1/h2 : uppercase | none */
+  --heading-weight: 600;
+  --heading-tracking: -0.01em;
+  --display-leading: 0.95;          /* interlignage du grand titre d'accueil */
+  --label-transform: uppercase;     /* boutons, sur-titres, navigation */
+}

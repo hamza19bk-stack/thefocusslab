@@ -1,0 +1,97 @@
+/* =========================================================================
+   THÈME « LAB » — fiche de protocole, esthétique technique / suisse
+   -------------------------------------------------------------------------
+   Blanc froid, texte quasi noir, filets de 1px, coins carrés, aucune ombre.
+   Accent rare : repères, liens, marqueurs.
+   Mise en page associée : src/styles/variants/lab.css (site.design = 'lab').
+
+   CONTRAT DES ACCENTS : les 7 jetons --c-accent, --c-accent-bright,
+   --c-accent-dim, --c-accent-soft, --c-accent-2, --c-accent-2-soft et
+   --c-text-on-accent tiennent chacun sur UNE ligne (remplacés par script).
+   Toute autre couleur dérivée d'un accent passe par var() ou color-mix().
+   ========================================================================= */
+
+/* ---- Polices auto-hébergées : Archivo (axe de largeur), IBM Plex Sans, JetBrains Mono ---- */
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/ibm-plex-sans';
+@import '@fontsource-variable/jetbrains-mono';
+@import './variants/lab.css';
+
+:root {
+  --color-scheme: light;
+
+  /* ---- Fonds et surfaces (opaques) ---- */
+  --c-bg:        #FFFFFF;   /* blanc pur */
+  --c-bg-deep:   #F8F9FA;   /* pied de page, menu mobile */
+  --c-surface:   #FFFFFF;   /* cellules */
+  --c-surface-2: #F8F9FA;   /* encarts, survols */
+  --c-surface-3: #DADDE1;   /* décor (barres du graphique) */
+
+  /* ---- Bordures et voiles ---- */
+  --c-border:        rgba(13, 15, 18, 0.14);
+  --c-border-strong: rgba(13, 15, 18, 0.86);
+  --c-overlay:       rgba(13, 15, 18, 0.04);
+  --c-overlay-alt:   rgba(13, 15, 18, 0.025);
+  --c-grid-line:     rgba(13, 15, 18, 0.045);
+  --c-shadow:        rgba(13, 15, 18, 0.10);
+
+  /* ---- Textes ---- */
+  --c-text:           #0D0F12;
+  --c-text-soft:      #30343A;
+  --c-text-muted:     #575C64;
+  --c-text-faint:     #9CA1A8;  /* décor uniquement */
+
+  /* ---- Accents (une ligne par jeton) ---- */
+  --c-accent: #1D4ED8;
+  --c-accent-bright: #1E40AF;
+  --c-accent-dim: #8FA7EA;
+  --c-accent-soft: rgba(29, 78, 216, 0.08);
+  --c-accent-2: #DC2626;
+  --c-accent-2-soft: rgba(220, 38, 38, 0.08);
+  --c-text-on-accent: #FFFFFF;
+
+  /* ---- Halos : aucun (fond technique neutre) ---- */
+  --halo-1: var(--c-bg);
+  --halo-2: var(--c-bg);
+  --halo-strength: 0;
+
+  /* ---- Dégradés : aplats (aucun dégradé visible) ---- */
+  --grad-accent:  linear-gradient(90deg, var(--c-accent), var(--c-accent));
+  --grad-surface: linear-gradient(var(--c-surface), var(--c-surface));
+  --grad-line:    linear-gradient(90deg, var(--c-border-strong), var(--c-border-strong));
+  --grad-visual:  linear-gradient(var(--c-surface), var(--c-surface));
+
+  /* ---- Ombres : aucune ombre portée ---- */
+  --shadow-xs: none;
+  --shadow-s:  none;
+  --shadow-m:  none;
+  --shadow-l:  none;
+  --shadow-accent: none;
+  --ring: 0 0 0 2px var(--c-accent);
+
+  /* ---- Impression ---- */
+  --c-print-bg:   #FFFFFF;
+  --c-print-text: #000000;
+
+  /* ---- Polices ---- */
+  --font-display: 'Archivo Variable', 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-label: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  --font-body: 'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+
+  /* ---- Rayons : coins carrés ---- */
+  --radius-xs: 0;
+  --radius-s: 0;
+  --radius-m: 0;
+  --radius-l: 0;
+  --radius-xl: 0;
+  --radius-pill: 0;
+  --radius-btn: 0;
+
+  /* ---- Variables de style ---- */
+  --heading-transform: none;
+  --heading-weight: 650;
+  --heading-tracking: -0.03em;
+  --display-leading: 0.9;
+  --label-transform: uppercase;
+}

@@ -1,0 +1,37 @@
+---
+/**
+ * CtaBand.astro — bandeau d'appel à l'action de fin de page.
+ * La note (site.booking.ctaNote) n'est rendue que si elle est renseignée ET si `note`
+ * est passé (à réserver aux pages dont le hero ne l'affiche pas déjà : pas de doublon).
+ */
+import { site } from '../data/site';
+import { hasCtaNote } from '../lib/data';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  lead: string;
+  primaryHref: string;
+  secondaryLabel: string;
+  secondaryHref: string;
+  note?: boolean;
+}
+const { eyebrow, title, lead, primaryHref, secondaryLabel, secondaryHref, note = false } = Astro.props;
+---
+
+<section class="section section--tight" aria-labelledby="cta-titre">
+  <div class="container">
+    <div class="callout reveal">
+      <div class="stack stack--m measure">
+        <p class="eyebrow">{eyebrow}</p>
+        <h2 id="cta-titre">{title}</h2>
+        <p class="lead">{lead}</p>
+        <div class="cluster">
+          <a class="btn btn--primary btn--lg" href={primaryHref}>{site.booking.ctaLabel}</a>
+          <a class="btn btn--ghost btn--lg" href={secondaryHref}>{secondaryLabel}</a>
+        </div>
+        {note && hasCtaNote && <p class="note" data-optional="cta-note">{site.booking.ctaNote}</p>}
+      </div>
+    </div>
+  </div>
+</section>

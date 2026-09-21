@@ -1,0 +1,289 @@
+---
+/**
+ * À propos — présentation centrée sur l'approche (jamais une biographie inventée).
+ * Le nom et le statut du coach n'apparaissent que s'ils sont renseignés dans site.ts ;
+ * la section « Diplômes et formations » n'apparaît que si content.credentials est rempli.
+ */
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site';
+import { about, ui, modeLabels, credentials } from '../data/content';
+import { isSet } from '../lib/utils';
+import { modesOn, hasCtaNote } from '../lib/data';
+
+const t = about;
+const coachName = isSet(site.coach.name) ? site.coach.name : '';
+const coachStatus = isSet(site.coach.status) ? site.coach.status : '';
+const diplomes = credentials.filter((c) => isSet(c.title));
+
+const personJsonLd = coachName
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'ProfilePage',
+      mainEntity: {
+        '@type': 'Person',
+        name: coachName,
+        ...(coachStatus ? { jobTitle: coachStatus } : {}),
+        ...(diplomes.length > 0
+          ? { hasCredential: diplomes.map((d) => ({ '@type': 'EducationalOccupationalCredential', name: d.title })) }
+          : {}),
+      },
+    }
+  : null;
+---
+
+<Base title={t.seo.title} description={t.seo.description} path="/a-propos">
+  {personJsonLd && <script slot="head" type="application/ld+json" set:html={JSON.stringify(personJsonLd)} />}
+
+  <section class="section section--tight hero" aria-labelledby="hero-titre">
+    <div class="container">
+      <div class="grid grid--sidebar grid--gap-l items-center">
+        <div class="stack stack--m animate-fade-up">
+          <p class="eyebrow">{t.hero.eyebrow}</p>
+          <h1 id="hero-titre">{t.hero.titleLead}<br /><span class="mark">{t.hero.titleMark}</span></h1>
+          <p class="lead">{t.hero.lead}</p>
+
+          {
+            modesOn.length > 0 && (
+              <ul class="cluster cluster--xs list-reset" aria-label={ui.modesLabel}>
+                {modesOn.map((k) => <li class="chip chip--dot">{modeLabels[k]}</li>)}
+              </ul>
+            )
+          }
+
+          <div class="cluster">
+            <a class="btn btn--primary btn--lg" href="/reservation">{site.booking.ctaLabel}</a>
+            <a class="btn btn--ghost btn--lg" href="/services">{t.hero.secondaryCta}</a>
+          </div>
+          {hasCtaNote && <p class="note" data-optional="cta-note">{site.booking.ctaNote}</p>}
+        </div>
+
+        <div class="portrait animate-fade-up delay-2">
+          <div class="visual visual--grid visual--square portrait__visual">
+            <svg class="portrait__art" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
+              <circle class="portrait__stroke" cx="100" cy="58" r="22"></circle>
+              <path class="portrait__stroke" d="M62 152c0-24 17-42 38-42s38 18 38 42"></path>
+              <path class="portrait__plate-l" d="M34 118h16M150 118h16"></path>
+              <path class="portrait__plate-xl" d="M42 108v20M158 108v20"></path>
+              <path class="portrait__bar" d="M50 118h100"></path>
+            </svg>
+          </div>
+          {
+            coachName && (
+              <p class="portrait__plate" data-optional="coach">
+                <span class="portrait__name">{coachName}</span>
+                {coachStatus && <span class="portrait__role">{coachStatus}</span>}
+              </p>
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Section id="approche" width="narrow" eyebrow={t.approach.eyebrow} title={t.approach.title} subtitle={t.approach.subtitle}>
+    <ol class="timeline">
+      {
+        t.approach.steps.map((step, i) => (
+          <li class="reveal" style={`--reveal-delay: ${i * 90}ms`}>
+            <span class="step-number" aria-hidden="true">{i + 1}</span>
+            <div class="stack stack--2xs">
+              <h3 class="h4"><span class="sr-only">{ui.stepPrefix(i + 1)}</span>{step.title}</h3>
+              <p class="text-soft">{step.text}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  <Section id="philosophie" variant="alt" eyebrow={t.philosophy.eyebrow} title={t.philosophy.title} subtitle={t.philosophy.subtitle}>
+    <ul class="grid grid--3 list-reset">
+      {
+        t.philosophy.items.map((item, i) => (
+          <li class="card card--hover reveal" style={`--reveal-delay: ${i * 90}ms`}>
+            <span class="icon-badge"><Icon name={item.icon} strokeWidth={1.75} /></span>
+            <h3 class="card__title">{item.title}</h3>
+            <p class="card__text">{item.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="grid grid--2 grid--gap-l engagements">
+      <article class="card card--pad-l card--accent reveal">
+        <h3 class="card__title">{t.philosophy.commitmentsTitle}</h3>
+        <ul class="list-check">
+          {t.philosophy.commitments.map((c) => <li>{c}</li>)}
+        </ul>
+      </article>
+      <article class="card card--pad-l reveal" style="--reveal-delay: 90ms">
+        <h3 class="card__title">{t.philosophy.notHereTitle}</h3>
+        <ul class="list-no">
+          {t.philosophy.notHere.map((c) => <li>{c}</li>)}
+        </ul>
+      </article>
+    </div>
+
+    {isSet(t.philosophy.quote) && <p class="pullquote reveal">{t.philosophy.quote}</p>}
+  </Section>
+
+  {
+    diplomes.length > 0 && (
+      <Section id="formations" optional="credentials" eyebrow={t.credentials.eyebrow} title={t.credentials.title} subtitle={t.credentials.subtitle}>
+        <ul class="grid grid--auto grid--gap-s list-reset">
+          {diplomes.map((d, i) => (
+            <li class="card card--hover reveal" style={`--reveal-delay: ${i * 80}ms`}>
+              <span class="icon-badge"><Icon name="award" /></span>
+              <h3 class="card__title credential__title">{d.title}</h3>
+              {(isSet(d.issuer) || isSet(d.year)) && (
+                <p class="card__meta">{[d.issuer, d.year].filter((v) => isSet(v)).join(' · ')}</p>
+              )}
+            </li>
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+
+  <Section id="valeurs" variant={diplomes.length > 0 ? 'alt' : 'default'} align="center" eyebrow={t.values.eyebrow} title={t.values.title} subtitle={t.values.subtitle}>
+    <ul class="grid grid--4 grid--gap-s list-reset">
+      {
+        t.values.items.map((item, i) => (
+          <li class="card card--hover reveal" style={`--reveal-delay: ${i * 80}ms`}>
+            <span class="icon-badge"><Icon name={item.icon} strokeWidth={1.75} /></span>
+            <h3 class="card__title">{item.title}</h3>
+            <p class="card__text">{item.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  {
+    modesOn.length > 0 && (
+      <Section id="formats" variant={diplomes.length > 0 ? 'default' : 'alt'} eyebrow={t.formats.eyebrow} title={t.formats.title} subtitle={t.formats.subtitle}>
+        <a slot="actions" class="btn btn--ghost" href="/services">{t.formats.moreLabel}</a>
+        <ul class="grid grid--auto grid--gap-s list-reset formats">
+          {modesOn.map((k, i) => (
+            <li class="card card--hover reveal" style={`--reveal-delay: ${i * 80}ms`}>
+              <span class="icon-badge icon-badge--2"><Icon name={t.formats.icons[k]} strokeWidth={1.75} /></span>
+              <h3 class="card__title">{modeLabels[k]}</h3>
+              <p class="card__text">{t.formats.texts[k]}</p>
+            </li>
+          ))}
+        </ul>
+        {isSet(t.formats.note) && <p class="note section__foot">{t.formats.note}</p>}
+      </Section>
+    )
+  }
+
+  <CtaBand
+    eyebrow={t.cta.eyebrow}
+    title={t.cta.title}
+    lead={t.cta.lead}
+    primaryHref="/reservation"
+    secondaryLabel={t.cta.secondaryCta}
+    secondaryHref="/contact"
+  />
+</Base>
+
+<style>
+  /* Portrait décoratif : borné tant que la grille est sur une colonne. */
+  .portrait {
+    position: relative;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 22rem;
+  }
+  @media (min-width: 62em) {
+    .portrait { max-width: none; margin: 0; }
+  }
+  .portrait__visual { display: grid; place-items: center; }
+  .portrait__art {
+    width: 66%;
+    max-width: 19rem;
+    height: auto;
+    color: var(--c-accent);
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    opacity: 0.85;
+  }
+  .portrait__stroke { stroke-width: 3; opacity: 0.9; }
+  .portrait__plate-l { stroke-width: 7; opacity: 0.55; }
+  .portrait__plate-xl { stroke-width: 10; opacity: 0.32; }
+  .portrait__bar { stroke-width: 3; opacity: 0.28; }
+
+  .portrait__plate {
+    position: absolute;
+    left: var(--space-s);
+    right: var(--space-s);
+    bottom: var(--space-s);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    padding: var(--space-xs) var(--space-s);
+    background: color-mix(in srgb, var(--c-bg) 88%, transparent);
+    border: var(--border-1);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-m);
+  }
+  @supports (backdrop-filter: blur(10px)) {
+    .portrait__plate {
+      background: color-mix(in srgb, var(--c-bg) 72%, transparent);
+      backdrop-filter: blur(10px);
+    }
+  }
+  .portrait__name {
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    font-weight: 600;
+    line-height: var(--leading-snug);
+    text-transform: var(--heading-transform);
+    color: var(--c-text);
+  }
+  .portrait__role { font-size: var(--step-small); color: var(--c-text-muted); }
+
+  .timeline {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: var(--space-l);
+  }
+  .timeline > li {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--space-s);
+  }
+  .timeline > li:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 1.375rem;
+    top: 3.25rem;
+    bottom: calc(var(--space-l) * -1);
+    width: 2px;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(180deg, var(--c-accent-dim), transparent);
+    opacity: 0.45;
+  }
+
+  .engagements { margin-top: var(--space-l); }
+
+  .pullquote {
+    margin-top: var(--space-xl);
+    padding-left: var(--space-m);
+    border-left: 3px solid var(--c-accent);
+    max-width: var(--measure);
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    font-weight: 500;
+    line-height: var(--leading-snug);
+    color: var(--c-text);
+  }
+
+  .credential__title { font-size: var(--step-1); }
+</style>
