@@ -1297,6 +1297,10 @@
 :root[data-design="lab"].js .reveal { transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
+  /* global.css neutralise la DURÉE des animations mais pas leur DÉLAI : avec
+     `animation-fill-mode: both`, les éléments .delay-1…4 restent donc à
+     opacity 0 pendant tout le délai (boutons et puces du hero invisibles). */
+  :root[data-design="lab"] :is(.animate-fade-up, .animate-fade) { animation-delay: 0s; }
   :root[data-design="lab"] .nav__link::after,
   :root[data-design="lab"] nav.footer__col .footer__link:hover::after,
   :root[data-design="lab"] .faq__item[open] .faq__icon { transition: none; }
